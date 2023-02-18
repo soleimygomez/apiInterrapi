@@ -1,6 +1,6 @@
 module.exports = function(sequelize, DataTypes) {
   return sequelize.define('tipo_entidad', {
-    id: {
+    id_entidad: {
       type: DataTypes.INTEGER(11),
       allowNull: false,
       autoIncrement: true,

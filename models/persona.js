@@ -1,6 +1,6 @@
 module.exports = function (sequelize, DataTypes) {
   return sequelize.define('persona', {
-    id: {
+    id_persona: {
       type: DataTypes.INTEGER(11),
       allowNull: false,
       autoIncrement: true,

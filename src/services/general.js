@@ -15,7 +15,7 @@ const createFormulario = async (req) => {
         nro_cuenta, tipo_persona, tipo_cuenta,
         nombre_depositante, telefono_depositante, cedula_depositante, correo_depositante, instagram_depositante,
         monto_enviar, imagen_comprobante, terminos_comprobante, email_comprobante,
-        id_moneda, id_entidad, id_formulario  } = req.headers
+        id_moneda, id_entidad, id_formulario } = req.headers
 
     try {
         const PersonaSearch = await dbSequelize.persona.findAll({ where: { identificacion: cedula_depositante, correo: correo_depositante, rol_id: 2 } });
@@ -24,7 +24,7 @@ const createFormulario = async (req) => {
             let Formulario = {
                 nombre_beneficiario, cedula_beneficiario, banco_beneficiario, telefono_beneficiario,
                 nro_cuenta, tipo_persona, tipo_cuenta, monto_enviar, imagen_comprobante, terminos_comprobante, email_comprobante,
-                id_moneda, id_entidad, id_formulario, id_persona: PersonaSearch[0].id,id_estado:0
+                id_moneda, id_entidad, id_formulario, id_persona: PersonaSearch[0].id, id_estado: 0
             };
 
             let FormularioNew = await dbSequelize.formulario.create(Formulario);
@@ -41,7 +41,7 @@ const createFormulario = async (req) => {
                 let Formulario = {
                     nombre_beneficiario, cedula_beneficiario, banco_beneficiario, telefono_beneficiario,
                     nro_cuenta, tipo_persona, tipo_cuenta, monto_enviar, imagen_comprobante, terminos_comprobante, email_comprobante,
-                    id_moneda, id_entidad, id_formulario, id_persona: PersonaNew[0].id,id_estado:0
+                    id_moneda, id_entidad, id_formulario, id_persona: PersonaNew[0].id, id_estado: 0
                 };
 
                 let FormularioNew = await dbSequelize.formulario.create(Formulario);
@@ -61,10 +61,7 @@ const createFormulario = async (req) => {
 
 const AllFormulario = async () => {
     try {
-        const Formularios = await dbSequelize.formulario.findAll({
-            include: [{ model: dbSequelize.rol }, { model: dbSequelize.formulario },
-            { model: dbSequelize.persona }, { model: dbSequelize.tipoMoneda }]
-        });
+        const Formularios = await dbSequelize.formulario.findAll({include: [{ model: dbSequelize.persona, required: true },{ model: dbSequelize.tipoMoneda, required: true },{ model: dbSequelize.tipoFormulario, required: true },{ model: dbSequelize.tipoEntidad, required: true },{ model: dbSequelize.estado, required: true }]});
         return { status: 200, data: Formularios };
     } catch (e) {
         console.log(e);
@@ -91,7 +88,10 @@ const createAdministrador = async (req) => {
             }
             else { return { status: 404, message: "Error Creando datos " }; }
         }
-        else { return { status: 404, message: "Error Administrador ya Registrado " }; }
+        else {
+
+            return { status: 404, message: "Error Administrador ya Registrado " };
+        }
 
 
     } catch (e) {

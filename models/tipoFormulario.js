@@ -1,6 +1,6 @@
-module.exports = function(sequelize, DataTypes) {
+module.exports = function (sequelize, DataTypes) {
   return sequelize.define('tipo_formulario', {
-    id: {
+    id_formulario: {
       type: DataTypes.INTEGER(11),
       allowNull: false,
       autoIncrement: true,
@@ -31,5 +31,5 @@ module.exports = function(sequelize, DataTypes) {
   }, {
     tableName: 'tipo_formulario'
   });
-  
+
 };

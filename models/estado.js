@@ -1,6 +1,6 @@
 module.exports = function(sequelize, DataTypes) {
   return sequelize.define('estado', {
-    id: {
+    id_estado: {
       type: DataTypes.INTEGER(11),
       allowNull: false,
       autoIncrement: true,

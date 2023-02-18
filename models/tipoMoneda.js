@@ -1,6 +1,6 @@
 module.exports = function (sequelize, DataTypes) {
   return sequelize.define('tipo_moneda', {
-    id: {
+    id_moneda: {
       type: DataTypes.INTEGER(11),
       allowNull: false,
       autoIncrement: true,
