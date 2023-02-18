@@ -11,11 +11,16 @@ const general_controller = require('../controllers/general');
 /*
 //****************************************************** */
 //****************************************************** */
+//Login
+router.post('/Login', general_controller.Login);
+
+
 //Formulario
 router.post('/Formulario/Create', general_controller.createFormulario);
 router.get('/Formulario/All', general_controller.AllFormulario);
 router.post('/tipoFormulario/Create', general_controller.createtipoFormulario);
 router.get('/tipoFormulario/All', general_controller.AlltipoFormulario);
+router.get('/SearchFormularioClient', general_controller.SearchFormularioClient);
 
 //Administrador
 router.post('/Administrador/Create', general_controller.createAdministrador);

@@ -112,6 +112,13 @@ module.exports = function (sequelize, DataTypes) {
       primaryKey: false,
       defaultValue: null
     },
+    id_estado: {
+      type: DataTypes.INTEGER(20),
+      allowNull: false,
+      autoIncrement: false,
+      primaryKey: false,
+      defaultValue: null
+    },
 
     createdAt: {
       type: 'TIMESTAMP',

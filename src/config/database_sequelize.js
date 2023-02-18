@@ -43,6 +43,7 @@ db.Sequelize = Sequelize;
 db.formulario = require('../../models/formulario.js')(sequelize, Sequelize);
 db.persona = require('../../models/persona.js')(sequelize, Sequelize);
 db.rol = require('../../models/rol.js')(sequelize, Sequelize);
+db.estado = require('../../models/estado.js')(sequelize, Sequelize);
 db.tasaCambio = require('../../models/tasaCambio.js')(sequelize, Sequelize);
 db.tipoEntidad=require('../../models/tipoEntidad.js')(sequelize, Sequelize);
 db.tipoFormulario=require('../../models/tipoFormulario.js')(sequelize, Sequelize);

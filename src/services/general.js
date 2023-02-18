@@ -13,12 +13,12 @@ const createFormulario = async (req) => {
 
     const { nombre_beneficiario, cedula_beneficiario, banco_beneficiario, telefono_beneficiario,
         nro_cuenta, tipo_persona, tipo_cuenta,
-        nombre_depositante, telefono_depositante, correo_depositante, instagram_depositante,
+        nombre_depositante, telefono_depositante, cedula_depositante, correo_depositante, instagram_depositante,
         monto_enviar, imagen_comprobante, terminos_comprobante, email_comprobante,
         id_moneda, id_entidad, id_formulario } = req.headers
 
     try {
-        const PersonaSearch = await dbSequelize.persona.findAll({ where: { nombre: nombre_depositante, correo: correo_depositante, rol_id: 2 } });
+        const PersonaSearch = await dbSequelize.persona.findAll({ where: { identificacion: cedula_depositante, correo: correo_depositante, rol_id: 2 } });
         if (PersonaSearch.length > 0) {
             // ya existe un usuario    
             let Formulario = {
@@ -34,7 +34,7 @@ const createFormulario = async (req) => {
             else { return { status: 404, message: "Error Enviando datos " }; }
         }
         else {//Crear la persona 
-            let Persona = { nombre: nombre_depositante, telefono: telefono_depositante, correo: correo_depositante, instagram: instagram_depositante, rol_id: 2 };
+            let Persona = { nombre: nombre_depositante, identificacion: cedula_depositante, telefono: telefono_depositante, correo: correo_depositante, instagram: instagram_depositante, rol_id: 2 };
             let PersonaNew = await dbSequelize.persona.create(Persona);
 
             if (PersonaNew) {
@@ -100,6 +100,28 @@ const createAdministrador = async (req) => {
     }
 };
 
+const Login = async (req) => {
+
+    const { contrasena, correo } = req.headers
+
+    try {
+        const PersonaSearch = await dbSequelize.persona.findOne({ where: { correo: correo, rol_id: 1 } });
+        if (PersonaSearch.length == 0) {
+            const validPassword = await helpers.matchPassword(contrasena, PersonaSearch.contrasena);
+            //console.log("VP",validPassword);
+            if (validPassword) {
+                return { status: 200, data: { acceso: true } };
+            }
+            else { return { status: 404, data: { acceso: true }, message: "contraseña incorrecta " }; }
+        }
+        else { return { status: 404, message: "Error El correo ingresado no existe" }; }
+
+
+    } catch (e) {
+        console.log(e);
+        return { status: 500, message: "Error interno del servidor." }
+    }
+};
 const createTasasCambio = async (req) => {
 
     const { descripcion, valor } = req.headers
@@ -215,4 +237,20 @@ const AllMoneda = async () => {
         return { status: 500, data: [], message: "Error interno del servidor." };
     }
 };
-module.exports = { AlltipoFormulario, AllMoneda, createMoneda, createFormulario, createtipoFormulario, AllFormulario, AllEntidad, createEntidad, createAdministrador, createTasasCambio, AllTasasCambio }
+
+const SearchFormularioClient = async (req) => {
+    try {
+        const { identificacion } = req.headers
+        const Persona = await dbSequelize.persona.findOne({ identificacion: identificacion });
+        const formularios = await dbSequelize.formulario.findAll({ id_persona: Persona.id });
+
+        return { status: 200, data: formularios };
+    } catch (e) {
+        console.log(e);
+        //throw e;
+        return { status: 500, data: [], message: "Error interno del servidor." };
+    }
+};
+
+
+module.exports = { SearchFormularioClient, Login, AlltipoFormulario, AllMoneda, createMoneda, createFormulario, createtipoFormulario, AllFormulario, AllEntidad, createEntidad, createAdministrador, createTasasCambio, AllTasasCambio }
