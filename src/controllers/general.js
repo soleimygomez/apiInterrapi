@@ -32,9 +32,9 @@ const Login = async (req, res, next) => {
     try {
         const result = await general_services.Login(req);
         if (result.status === 200) {
-            res.status(result.status).json(result.message);
+            res.status(result.status).json(result.data);
         } else {
-            res.status(result.status).json(result.message);
+            res.status(result.status).json(result.data);
         }
         next();
     } catch (e) {
