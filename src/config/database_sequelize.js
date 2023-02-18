@@ -50,6 +50,23 @@ db.tipoFormulario=require('../../models/tipoFormulario.js')(sequelize, Sequelize
 db.tipoMoneda=require('../../models/tipoMoneda.js')(sequelize, Sequelize); 
 
 
+db.rol.belongsTo(db.persona, { foreignKey: 'rol_id' });
+db.persona.hasOne(db.rol, { foreignKey: 'rol_id' });
+
+db.tipoFormulario.belongsTo(db.formulario, { foreignKey: 'id_formulario' });
+db.formulario.hasOne(db.tipoFormulario, { foreignKey: 'id_formulario' });
+
+db.persona.belongsTo(db.formulario, { foreignKey: 'id_persona' });
+db.formulario.hasOne(db.persona, { foreignKey: 'id_persona' });
+
+db.tipoMoneda.belongsTo(db.formulario, { foreignKey: 'id_moneda' });
+db.formulario.hasOne(db.tipoMoneda, { foreignKey: 'id_moneda' });
+
+db.tipoEntidad.belongsTo(db.formulario, { foreignKey: 'id_entidad' });
+db.formulario.hasOne(db.tipoEntidad, { foreignKey: 'id_entidad' });
+
+db.estado.belongsTo(db.formulario, { foreignKey: 'id_estado' });
+db.formulario.hasOne(db.estado, { foreignKey: 'id_estado' });
 
 
 
