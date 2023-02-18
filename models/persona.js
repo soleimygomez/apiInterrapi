@@ -51,12 +51,11 @@ module.exports = function (sequelize, DataTypes) {
     },
     instagram: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
       autoIncrement: false,
       primaryKey: false,
       defaultValue: null
     },
-
     createdAt: {
       type: 'TIMESTAMP',
       allowNull: false,

@@ -1,8 +1,10 @@
 
 const expirationTime = 5;
 const jwt = require('jsonwebtoken');
+const helpers = require('../../lib/helpers');
 const persona = require('../../models/persona.js');
 const dbSequelize = require('../config/database_sequelize.js');
+
 
 const sequelize = dbSequelize.sequelize;
 const Sequelize = dbSequelize.Sequelize;
@@ -62,8 +64,8 @@ const createFormulario = async (req) => {
 const AllFormulario = async () => {
     try {
         const Formularios = await dbSequelize.formulario.findAll({
-            include: [{ model: dbSequelize.rol }, { model: dbSequelize.formulario },
-            { model: dbSequelize.persona }, { model: dbSequelize.tipoMoneda }]
+            include: [{ model: dbSequelize.estado, require: true, attributes: ["nombre"] }, { model: dbSequelize.tipoFormulario, require: true, attributes: ["descripcion"] },
+            { model: dbSequelize.persona, require: true, attributes: ["identificacion", "nombre", "correo", "telefono", "instagram"]  }, { model: dbSequelize.tipoMoneda, require: true, attributes: ["descripcion"]  }, { model: dbSequelize.tipoEntidad, require: true, attributes: ["descripcion"]  },]
         });
         return { status: 200, data: Formularios };
     } catch (e) {
@@ -79,12 +81,15 @@ const createAdministrador = async (req) => {
         nombre, telefono, identificacion, contrasena, correo } = req.headers
 
     try {
-        const PersonaSearch = await dbSequelize.persona.findAll({ where: { nombre: nombre, correo: correo, rol_id: 1 } });
+        const PersonaSearch = await dbSequelize.persona.findOne(
+            { attributes: ["id", "identificacion", "nombre", "rol_id", "telefono", "contrasena", "correo"],
+             where: { nombre: nombre, correo: correo, rol_id: 1 } 
+        });
+        
         if (!PersonaSearch) {
             // ya existe un usuario 
-            const Persona = { nombre: nombre, telefono: telefono, identificacion: identificacion, correo: correo };
+            const Persona = { nombre: nombre, telefono: telefono, identificacion: identificacion, correo: correo, rol_id: 1 };
             Persona.contrasena = await helpers.encryptPassword(contrasena);
-
             let PersonaNew = await dbSequelize.persona.create(Persona);
             if (PersonaNew) {
                 return { status: 200, message: "Creado Correctamente" };
@@ -105,16 +110,19 @@ const Login = async (req) => {
     const { contrasena, correo } = req.headers
 
     try {
-        const PersonaSearch = await dbSequelize.persona.findOne({ where: { correo: correo, rol_id: 1 } });
-        if (PersonaSearch.length == 0) {
+        const PersonaSearch = await dbSequelize.persona.findOne({ 
+            attributes: ["id", "identificacion", "nombre", "rol_id", "telefono", "contrasena", "correo"], 
+            where: { correo: correo, rol_id: 1 } 
+        });
+        if (PersonaSearch) {
             const validPassword = await helpers.matchPassword(contrasena, PersonaSearch.contrasena);
             //console.log("VP",validPassword);
             if (validPassword) {
-                return { status: 200, data: { acceso: true } };
+                return { status: 200, data: { acceso: 'true' } };
             }
-            else { return { status: 404, data: { acceso: true }, message: "contraseña incorrecta " }; }
+            else { return { status: 404, data: { acceso: 'false' }}}
         }
-        else { return { status: 404, message: "Error El correo ingresado no existe" }; }
+        else { return { status: 403, message: "Error El correo ingresado no existe" }; }
 
 
     } catch (e) {
