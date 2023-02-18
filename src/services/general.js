@@ -15,7 +15,7 @@ const createFormulario = async (req) => {
         nro_cuenta, tipo_persona, tipo_cuenta,
         nombre_depositante, telefono_depositante, cedula_depositante, correo_depositante, instagram_depositante,
         monto_enviar, imagen_comprobante, terminos_comprobante, email_comprobante,
-        id_moneda, id_entidad, id_formulario } = req.headers
+        id_moneda, id_entidad, id_formulario  } = req.headers
 
     try {
         const PersonaSearch = await dbSequelize.persona.findAll({ where: { identificacion: cedula_depositante, correo: correo_depositante, rol_id: 2 } });
@@ -24,7 +24,7 @@ const createFormulario = async (req) => {
             let Formulario = {
                 nombre_beneficiario, cedula_beneficiario, banco_beneficiario, telefono_beneficiario,
                 nro_cuenta, tipo_persona, tipo_cuenta, monto_enviar, imagen_comprobante, terminos_comprobante, email_comprobante,
-                id_moneda, id_entidad, id_formulario, id_persona: PersonaSearch[0].id
+                id_moneda, id_entidad, id_formulario, id_persona: PersonaSearch[0].id,id_estado:0
             };
 
             let FormularioNew = await dbSequelize.formulario.create(Formulario);
@@ -41,7 +41,7 @@ const createFormulario = async (req) => {
                 let Formulario = {
                     nombre_beneficiario, cedula_beneficiario, banco_beneficiario, telefono_beneficiario,
                     nro_cuenta, tipo_persona, tipo_cuenta, monto_enviar, imagen_comprobante, terminos_comprobante, email_comprobante,
-                    id_moneda, id_entidad, id_formulario, id_persona: PersonaNew[0].id
+                    id_moneda, id_entidad, id_formulario, id_persona: PersonaNew[0].id,id_estado:0
                 };
 
                 let FormularioNew = await dbSequelize.formulario.create(Formulario);
