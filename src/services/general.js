@@ -38,12 +38,12 @@ const createFormulario = async (req) => {
         else {//Crear la persona 
             let Persona = { nombre: nombre_depositante, identificacion: cedula_depositante, telefono: telefono_depositante, correo: correo_depositante, instagram: instagram_depositante, rol_id: 2 };
             let PersonaNew = await dbSequelize.persona.create(Persona);
-
+            
             if (PersonaNew) {
                 let Formulario = {
                     nombre_beneficiario, cedula_beneficiario, banco_beneficiario, telefono_beneficiario,
                     nro_cuenta, tipo_persona, tipo_cuenta, monto_enviar, imagen_comprobante, terminos_comprobante, email_comprobante,
-                    id_moneda, id_entidad, id_formulario, id_persona: PersonaNew[0].id, id_estado: 0
+                    id_moneda, id_entidad, id_formulario, id_persona: PersonaNew.id_persona, id_estado: 0
                 };
 
                 let FormularioNew = await dbSequelize.formulario.create(Formulario);
