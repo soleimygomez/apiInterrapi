@@ -69,6 +69,13 @@ module.exports = function (sequelize, DataTypes) {
       autoIncrement: false,
       primaryKey: false,
       defaultValue: null
+    },
+    loginacces: {
+      type: DataTypes.INTEGER(11),
+      allowNull: false,
+      autoIncrement: false,
+      primaryKey: false,
+      defaultValue: 0
     }
   }, {
     tableName: 'persona'

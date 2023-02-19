@@ -21,6 +21,8 @@ router.get('/Formulario/All', general_controller.AllFormulario);
 router.post('/tipoFormulario/Create', general_controller.createtipoFormulario);
 router.get('/tipoFormulario/All', general_controller.AlltipoFormulario);
 router.get('/SearchFormularioClient', general_controller.SearchFormularioClient);
+router.put('/FormularioUpdateStatus', general_controller.FormularioUpdateStatus);
+
 
 //Administrador
 router.post('/Administrador/Create', general_controller.createAdministrador);

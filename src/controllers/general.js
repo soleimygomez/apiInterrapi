@@ -45,6 +45,24 @@ const Login = async (req, res, next) => {
     }
 };
 
+const FormularioUpdateStatus= async (req, res, next) => {
+
+    try {
+        const result = await general_services.FormularioUpdateStatus(req);
+        if (result.status === 200) {
+            res.status(result.status).json(result.message);
+        } else {
+            res.status(result.status).json(result.message);
+        }
+        next();
+    } catch (e) {
+        console.log('Error', e);
+        res.status(500).json({
+            message: 'Por favor, valida los datos ingresados e intenta nuevamente.',
+        });
+    }
+};
+
 const AllFormulario = async (req, res, next) => {
     try {
         const result = await general_services.AllFormulario();
@@ -258,5 +276,5 @@ const SearchFormularioClient = async (req, res, next) => {
 
 };
 module.exports = {
-    SearchFormularioClient, createFormulario, createMoneda, Login, AllMoneda, AllFormulario, AllEntidad, AlltipoFormulario, createtipoFormulario, createAdministrador, createTasasCambio, AllTasasCambio, createEntidad
+    SearchFormularioClient, FormularioUpdateStatus, createFormulario, createMoneda, Login, AllMoneda, AllFormulario, AllEntidad, AlltipoFormulario, createtipoFormulario, createAdministrador, createTasasCambio, AllTasasCambio, createEntidad
 }

@@ -26,7 +26,7 @@ const createFormulario = async (req) => {
             let Formulario = {
                 nombre_beneficiario, cedula_beneficiario, banco_beneficiario, telefono_beneficiario,
                 nro_cuenta, tipo_persona, tipo_cuenta, monto_enviar, imagen_comprobante, terminos_comprobante, email_comprobante,
-                id_moneda, id_entidad, id_formulario, id_persona: PersonaSearch[0].id, id_estado: 0
+                id_moneda, id_entidad, id_formulario, id_persona: PersonaSearch[0].id_persona, id_estado: 0
             };
 
             let FormularioNew = await dbSequelize.formulario.create(Formulario);
@@ -63,7 +63,7 @@ const createFormulario = async (req) => {
 
 const AllFormulario = async () => {
     try {
-        const Formularios = await dbSequelize.formulario.findAll({include: [{ model: dbSequelize.persona, required: true },{ model: dbSequelize.tipoMoneda, required: true },{ model: dbSequelize.tipoFormulario, required: true },{ model: dbSequelize.tipoEntidad, required: true },{ model: dbSequelize.estado, required: true }]});
+        const Formularios = await dbSequelize.formulario.findAll({ include: [{ model: dbSequelize.persona, required: true }, { model: dbSequelize.tipoMoneda, required: true }, { model: dbSequelize.tipoFormulario, required: true }, { model: dbSequelize.tipoEntidad, required: true }, { model: dbSequelize.estado, required: true }] });
         return { status: 200, data: Formularios };
     } catch (e) {
         console.log(e);
@@ -79,10 +79,11 @@ const createAdministrador = async (req) => {
 
     try {
         const PersonaSearch = await dbSequelize.persona.findOne(
-            { attributes: ["id", "identificacion", "nombre", "rol_id", "telefono", "contrasena", "correo"],
-             where: { nombre: nombre, correo: correo, rol_id: 1 } 
-        });
-        
+            {
+                attributes: ["id", "identificacion", "nombre", "rol_id", "telefono", "contrasena", "correo"],
+                where: { nombre: nombre, correo: correo, rol_id: 1 }
+            });
+
         if (!PersonaSearch) {
             // ya existe un usuario 
             const Persona = { nombre: nombre, telefono: telefono, identificacion: identificacion, correo: correo, rol_id: 1 };
@@ -110,17 +111,21 @@ const Login = async (req) => {
     const { contrasena, correo } = req.headers
 
     try {
-        const PersonaSearch = await dbSequelize.persona.findOne({ 
-            attributes: ["identificacion", "nombre", "rol_id", "telefono", "contrasena", "correo"], 
-            where: { correo: correo, rol_id: 1 } 
+        const PersonaSearch = await dbSequelize.persona.findOne({
+            attributes: ["identificacion", "nombre", "rol_id", "telefono", "contrasena", "correo"],
+            where: { correo: correo, rol_id: 1 }
         });
         if (PersonaSearch) {
             const validPassword = await helpers.matchPassword(contrasena, PersonaSearch.contrasena);
             //console.log("VP",validPassword);
             if (validPassword) {
+                //si el acceso es correcto se pone en uno la bandera del login en persona
+                await dbSequelize.persona.update({ loginacces: 1 }, {
+                    where: { correo: correo }
+                });
                 return { status: 200, data: { acceso: 'true' } };
             }
-            else { return { status: 404, data: { acceso: 'false' }}}
+            else { return { status: 404, data: { acceso: 'false' } } }
         }
         else { return { status: 403, message: "Error El correo ingresado no existe" }; }
 
@@ -130,12 +135,33 @@ const Login = async (req) => {
         return { status: 500, message: "Error interno del servidor." }
     }
 };
+
+const FormularioUpdateStatus = async (req) => {
+
+    const { idFormulario, status } = req.headers
+
+    try {
+        let updateStatus = await dbSequelize.formulario.update({ id_estado: status }, {
+            where: { id: idFormulario }
+        });
+        if (updateStatus) {
+            return { status: 200, message: "Se Actualizo Correctamente el estado" };
+        }
+        else { return { status: 403, message: "Error No se puedo actualizar el estado del formulario" }; }
+
+
+    } catch (e) {
+        console.log(e);
+        return { status: 500, message: "Error interno del servidor." }
+    }
+};
+
 const createTasasCambio = async (req) => {
 
     const { descripcion, valor } = req.headers
 
     try {
-        const tasaCambio = { descripcion : descripcion, valor: valor, id_tipo_formulario: 1 };
+        const tasaCambio = { descripcion: descripcion, valor: valor, id_tipo_formulario: 1 };
         let tasaCambioNew = await dbSequelize.tasaCambio.create(tasaCambio);
         if (tasaCambioNew) {
             return { status: 200, message: "Creado Correctamente" };
@@ -259,11 +285,13 @@ const SearchFormularioClient = async (req) => {
     try {
         const { identificacion } = req.headers;
         console.log(identificacion)
-        const Persona = await dbSequelize.persona.findOne({ where: {
-            identificacion: identificacion
-        } });
-        if(!Persona){
-            return { status: 403, data: { message: "No hay Informacion"} };
+        const Persona = await dbSequelize.persona.findOne({
+            where: {
+                identificacion: identificacion
+            }
+        });
+        if (!Persona) {
+            return { status: 403, data: { message: "No hay Informacion" } };
         }
         const formularios = await dbSequelize.formulario.findAll({ id_persona: Persona.id });
 
@@ -276,4 +304,4 @@ const SearchFormularioClient = async (req) => {
 };
 
 
-module.exports = { SearchFormularioClient, Login, AlltipoFormulario, AllMoneda, createMoneda, createFormulario, createtipoFormulario, AllFormulario, AllEntidad, createEntidad, createAdministrador, createTasasCambio, AllTasasCambio }
+module.exports = { SearchFormularioClient, Login, FormularioUpdateStatus, AlltipoFormulario, AllMoneda, createMoneda, createFormulario, createtipoFormulario, AllFormulario, AllEntidad, createEntidad, createAdministrador, createTasasCambio, AllTasasCambio }
