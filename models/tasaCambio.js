@@ -21,6 +21,11 @@ module.exports = function(sequelize, DataTypes) {
       primaryKey: false,
       defaultValue: null
     }, 
+    id_tipo_formulario: {
+      type: DataTypes.INTEGER(20),
+      allowNull: false,
+      defaultValue: null
+    }, 
   }, {
     tableName: 'tasa_cambio'
   });

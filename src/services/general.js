@@ -111,7 +111,7 @@ const Login = async (req) => {
 
     try {
         const PersonaSearch = await dbSequelize.persona.findOne({ 
-            attributes: ["id", "identificacion", "nombre", "rol_id", "telefono", "contrasena", "correo"], 
+            attributes: ["identificacion", "nombre", "rol_id", "telefono", "contrasena", "correo"], 
             where: { correo: correo, rol_id: 1 } 
         });
         if (PersonaSearch) {
@@ -135,7 +135,7 @@ const createTasasCambio = async (req) => {
     const { descripcion, valor } = req.headers
 
     try {
-        const tasaCambio = { descripcion, valor };
+        const tasaCambio = { descripcion : descripcion, valor: valor, id_tipo_formulario: 1 };
         let tasaCambioNew = await dbSequelize.tasaCambio.create(tasaCambio);
         if (tasaCambioNew) {
             return { status: 200, message: "Creado Correctamente" };
@@ -167,8 +167,17 @@ const createMoneda = async (req) => {
 };
 
 const AllTasasCambio = async () => {
+    var id_tipo_formulario = 1;
     try {
-        const tasaCambios = await dbSequelize.tasaCambio.findAll({});
+        const tasaCambios = await dbSequelize.tasaCambio.findAll({
+            order: [
+                ['id', 'DESC'],
+            ],
+            limit: 1,
+            where: {
+                id_tipo_formulario: id_tipo_formulario
+            }
+        });
         return { status: 200, data: tasaCambios };
     } catch (e) {
         console.log(e);
@@ -248,8 +257,14 @@ const AllMoneda = async () => {
 
 const SearchFormularioClient = async (req) => {
     try {
-        const { identificacion } = req.headers
-        const Persona = await dbSequelize.persona.findOne({ identificacion: identificacion });
+        const { identificacion } = req.headers;
+        console.log(identificacion)
+        const Persona = await dbSequelize.persona.findOne({ where: {
+            identificacion: identificacion
+        } });
+        if(!Persona){
+            return { status: 403, data: { message: "No hay Informacion"} };
+        }
         const formularios = await dbSequelize.formulario.findAll({ id_persona: Persona.id });
 
         return { status: 200, data: formularios };

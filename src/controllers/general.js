@@ -62,13 +62,16 @@ const AllFormulario = async (req, res, next) => {
                     "tipo_cuenta": element.tipo_cuenta,
                     "monto_enviar": element.monto_enviar,
                     "imagen_comprobante": element.imagen_comprobante,
-                    
                     "terminos_comprobante": element.terminos_comprobante,
                     "email_comprobante": element.email_comprobante ,
                     "id_moneda": element.tipo_moneda.tipo,
                     "id_entidad": element.tipo_entidad.descripcion,
                     "id_formulario": element.tipo_formulario.descripcion,
                     "id_persona": element.persona.nombre,
+                    "cedula_depositante": element.persona.cedula,
+                    "telefono_depositante": element.persona.telefono,
+                    "correo_depositante": element.persona.correo,
+                    "instagram_depositante": element.persona.instagram,
                     "id_estado": element.estado.nombre,
                 }) 
 
