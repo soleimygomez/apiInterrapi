@@ -138,11 +138,11 @@ const Login = async (req) => {
 
 const FormularioUpdateStatus = async (req) => {
 
-    const { idFormulario, status } = req.headers
+    const { id_formulario, status } = req.headers
 
     try {
         let updateStatus = await dbSequelize.formulario.update({ id_estado: status }, {
-            where: { id: idFormulario }
+            where: { id: id_formulario }
         });
         if (updateStatus) {
             return { status: 200, message: "Se Actualizo Correctamente el estado" };
@@ -284,16 +284,20 @@ const AllMoneda = async () => {
 const SearchFormularioClient = async (req) => {
     try {
         const { identificacion } = req.headers;
-        console.log(identificacion)
         const Persona = await dbSequelize.persona.findOne({
             where: {
                 identificacion: identificacion
             }
         });
+
         if (!Persona) {
             return { status: 403, data: { message: "No hay Informacion" } };
         }
-        const formularios = await dbSequelize.formulario.findAll({ id_persona: Persona.id });
+        const formularios = await dbSequelize.formulario.findAll(
+            { 
+                where: { id_persona: Persona.id_persona }
+            }
+        );
 
         return { status: 200, data: formularios };
     } catch (e) {
