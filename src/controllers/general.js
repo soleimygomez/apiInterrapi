@@ -45,7 +45,7 @@ const Login = async (req, res, next) => {
     }
 };
 
-const FormularioUpdateStatus= async (req, res, next) => {
+const FormularioUpdateStatus = async (req, res, next) => {
 
     try {
         const result = await general_services.FormularioUpdateStatus(req);
@@ -65,10 +65,10 @@ const FormularioUpdateStatus= async (req, res, next) => {
 
 const AllFormulario = async (req, res, next) => {
     try {
-        const result = await general_services.AllFormulario();
+        const result = await general_services.AllFormulario(req);
         if (result.status === 200) {
             let datNew = [];
-            result.data.forEach( element => { 
+            result.data.forEach(element => {
                 datNew.push({
                     "id": element.id,
                     "nombre_beneficiario": element.nombre_beneficiario,
@@ -81,7 +81,7 @@ const AllFormulario = async (req, res, next) => {
                     "monto_enviar": element.monto_enviar,
                     "imagen_comprobante": element.imagen_comprobante,
                     "terminos_comprobante": element.terminos_comprobante,
-                    "email_comprobante": element.email_comprobante ,
+                    "email_comprobante": element.email_comprobante,
                     "id_moneda": element.tipo_moneda.tipo,
                     "id_entidad": element.tipo_entidad.descripcion,
                     "id_formulario": element.tipo_formulario.descripcion,
@@ -91,9 +91,9 @@ const AllFormulario = async (req, res, next) => {
                     "correo_depositante": element.persona.correo,
                     "instagram_depositante": element.persona.instagram,
                     "id_estado": element.estado.nombre,
-                }) 
+                })
 
-            }); 
+            });
             res.status(result.status).json(datNew);
         } else {
             res.status(result.status).json(result.message);
@@ -211,7 +211,7 @@ const createtipoFormulario = async (req, res, next) => {
 
 const AlltipoFormulario = async (req, res, next) => {
     try {
-        const result = await general_services.AlltipoFormulario();
+        const result = await general_services.AlltipoFormulario(req);
         if (result.status === 200) {
 
             res.status(result.status).json(result);

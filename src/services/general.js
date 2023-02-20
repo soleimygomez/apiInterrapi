@@ -17,33 +17,17 @@ const createFormulario = async (req) => {
         nro_cuenta, tipo_persona, tipo_cuenta,
         nombre_depositante, telefono_depositante, cedula_depositante, correo_depositante, instagram_depositante,
         monto_enviar, imagen_comprobante, terminos_comprobante, email_comprobante,
-        id_moneda, id_entidad, id_formulario } = req.headers
+        id_moneda, id_entidad, id_formulario, acceso } = req.headers
 
     try {
-        const PersonaSearch = await dbSequelize.persona.findAll({ where: { identificacion: cedula_depositante, correo: correo_depositante, rol_id: 2 } });
-        if (PersonaSearch.length > 0) {
-            // ya existe un usuario    
-            let Formulario = {
-                nombre_beneficiario, cedula_beneficiario, banco_beneficiario, telefono_beneficiario,
-                nro_cuenta, tipo_persona, tipo_cuenta, monto_enviar, imagen_comprobante, terminos_comprobante, email_comprobante,
-                id_moneda, id_entidad, id_formulario, id_persona: PersonaSearch[0].id_persona, id_estado: 0
-            };
-
-            let FormularioNew = await dbSequelize.formulario.create(Formulario);
-            if (FormularioNew) {
-                return { status: 200, message: "Enviado Correctamente" };
-            }
-            else { return { status: 404, message: "Error Enviando datos " }; }
-        }
-        else {//Crear la persona 
-            let Persona = { nombre: nombre_depositante, identificacion: cedula_depositante, telefono: telefono_depositante, correo: correo_depositante, instagram: instagram_depositante, rol_id: 2 };
-            let PersonaNew = await dbSequelize.persona.create(Persona);
-            
-            if (PersonaNew) {
+        if (acceso) {
+            const PersonaSearch = await dbSequelize.persona.findAll({ where: { identificacion: cedula_depositante, correo: correo_depositante, rol_id: 2 } });
+            if (PersonaSearch.length > 0) {
+                // ya existe un usuario    
                 let Formulario = {
                     nombre_beneficiario, cedula_beneficiario, banco_beneficiario, telefono_beneficiario,
                     nro_cuenta, tipo_persona, tipo_cuenta, monto_enviar, imagen_comprobante, terminos_comprobante, email_comprobante,
-                    id_moneda, id_entidad, id_formulario, id_persona: PersonaNew.id_persona, id_estado: 0
+                    id_moneda, id_entidad, id_formulario, id_persona: PersonaSearch[0].id_persona, id_estado: 0
                 };
 
                 let FormularioNew = await dbSequelize.formulario.create(Formulario);
@@ -51,20 +35,45 @@ const createFormulario = async (req) => {
                     return { status: 200, message: "Enviado Correctamente" };
                 }
                 else { return { status: 404, message: "Error Enviando datos " }; }
+            }
+            else {//Crear la persona 
+                let Persona = { nombre: nombre_depositante, identificacion: cedula_depositante, telefono: telefono_depositante, correo: correo_depositante, instagram: instagram_depositante, rol_id: 2 };
+                let PersonaNew = await dbSequelize.persona.create(Persona);
 
-            } else { return { status: 404, message: "Error Enviando datos de la Persona que envia " }; }
+                if (PersonaNew) {
+                    let Formulario = {
+                        nombre_beneficiario, cedula_beneficiario, banco_beneficiario, telefono_beneficiario,
+                        nro_cuenta, tipo_persona, tipo_cuenta, monto_enviar, imagen_comprobante, terminos_comprobante, email_comprobante,
+                        id_moneda, id_entidad, id_formulario, id_persona: PersonaNew.id_persona, id_estado: 0
+                    };
+
+                    let FormularioNew = await dbSequelize.formulario.create(Formulario);
+                    if (FormularioNew) {
+                        return { status: 200, message: "Enviado Correctamente" };
+                    }
+                    else { return { status: 404, message: "Error Enviando datos " }; }
+
+                } else { return { status: 404, message: "Error Enviando datos de la Persona que envia " }; }
+            }
+        } else {
+            return { status: 500, message: "Debe estar logeado para acceder al servicio" };
         }
-
     } catch (e) {
         console.log(e);
         return { status: 500, message: "Error interno del servidor." }
     }
 };
 
-const AllFormulario = async () => {
+const AllFormulario = async (req) => {
+    const { acceso } = req.headers
     try {
-        const Formularios = await dbSequelize.formulario.findAll({ include: [{ model: dbSequelize.persona, required: true }, { model: dbSequelize.tipoMoneda, required: true }, { model: dbSequelize.tipoFormulario, required: true }, { model: dbSequelize.tipoEntidad, required: true }, { model: dbSequelize.estado, required: true }] });
-        return { status: 200, data: Formularios };
+        if (acceso) {
+            const Formularios = await dbSequelize.formulario.findAll({ include: [{ model: dbSequelize.persona, required: true }, { model: dbSequelize.tipoMoneda, required: true }, { model: dbSequelize.tipoFormulario, required: true }, { model: dbSequelize.tipoEntidad, required: true }, { model: dbSequelize.estado, required: true }] });
+            return { status: 200, data: Formularios };
+        }
+        else {
+            return { status: 500, message: "Debe estar logeado para acceder al servicio" };
+        }
     } catch (e) {
         console.log(e);
         //throw e;
@@ -75,31 +84,34 @@ const AllFormulario = async () => {
 const createAdministrador = async (req) => {
 
     const {
-        nombre, telefono, identificacion, contrasena, correo } = req.headers
+        nombre, telefono, identificacion, contrasena, correo, acceso } = req.headers
 
     try {
-        const PersonaSearch = await dbSequelize.persona.findOne(
-            {
-                attributes: ["id", "identificacion", "nombre", "rol_id", "telefono", "contrasena", "correo"],
-                where: { nombre: nombre, correo: correo, rol_id: 1 }
-            });
+        if (acceso) {
+            const PersonaSearch = await dbSequelize.persona.findOne(
+                {
+                    attributes: ["id", "identificacion", "nombre", "rol_id", "telefono", "contrasena", "correo"],
+                    where: { nombre: nombre, correo: correo, rol_id: 1 }
+                });
 
-        if (!PersonaSearch) {
-            // ya existe un usuario 
-            const Persona = { nombre: nombre, telefono: telefono, identificacion: identificacion, correo: correo, rol_id: 1 };
-            Persona.contrasena = await helpers.encryptPassword(contrasena);
-            let PersonaNew = await dbSequelize.persona.create(Persona);
-            if (PersonaNew) {
-                return { status: 200, message: "Creado Correctamente" };
+            if (!PersonaSearch) {
+                // ya existe un usuario 
+                const Persona = { nombre: nombre, telefono: telefono, identificacion: identificacion, correo: correo, rol_id: 1 };
+                Persona.contrasena = await helpers.encryptPassword(contrasena);
+                let PersonaNew = await dbSequelize.persona.create(Persona);
+                if (PersonaNew) {
+                    return { status: 200, message: "Creado Correctamente" };
+                }
+                else { return { status: 404, message: "Error Creando datos " }; }
             }
-            else { return { status: 404, message: "Error Creando datos " }; }
+            else {
+
+                return { status: 404, message: "Error Administrador ya Registrado " };
+            }
         }
         else {
-
-            return { status: 404, message: "Error Administrador ya Registrado " };
+            return { status: 500, message: "Debe estar logeado para acceder al servicio" };
         }
-
-
     } catch (e) {
         console.log(e);
         return { status: 500, message: "Error interno del servidor." }
@@ -138,17 +150,21 @@ const Login = async (req) => {
 
 const FormularioUpdateStatus = async (req) => {
 
-    const { id_formulario, status } = req.headers
+    const { id_formulario, status, acceso } = req.headers
 
     try {
-        let updateStatus = await dbSequelize.formulario.update({ id_estado: status }, {
-            where: { id: id_formulario }
-        });
-        if (updateStatus) {
-            return { status: 200, message: "Se Actualizo Correctamente el estado" };
+        if (acceso) {
+            let updateStatus = await dbSequelize.formulario.update({ id_estado: status }, {
+                where: { id: id_formulario }
+            });
+            if (updateStatus) {
+                return { status: 200, message: "Se Actualizo Correctamente el estado" };
+            }
+            else { return { status: 403, message: "Error No se puedo actualizar el estado del formulario" }; }
         }
-        else { return { status: 403, message: "Error No se puedo actualizar el estado del formulario" }; }
-
+        else {
+            return { status: 500, message: "Debe estar logeado para acceder al servicio" };
+        }
 
     } catch (e) {
         console.log(e);
@@ -158,16 +174,20 @@ const FormularioUpdateStatus = async (req) => {
 
 const createTasasCambio = async (req) => {
 
-    const { descripcion, valor } = req.headers
+    const { descripcion, valor, acceso } = req.headers
 
     try {
-        const tasaCambio = { descripcion: descripcion, valor: valor, id_tipo_formulario: 1 };
-        let tasaCambioNew = await dbSequelize.tasaCambio.create(tasaCambio);
-        if (tasaCambioNew) {
-            return { status: 200, message: "Creado Correctamente" };
-        }
-        else { return { status: 404, message: "Error Creando datos " }; }
+        if (acceso) {
 
+            const tasaCambio = { descripcion: descripcion, valor: valor, id_tipo_formulario: 1 };
+            let tasaCambioNew = await dbSequelize.tasaCambio.create(tasaCambio);
+            if (tasaCambioNew) {
+                return { status: 200, message: "Creado Correctamente" };
+            }
+            else { return { status: 404, message: "Error Creando datos " }; }
+        } else {
+            return { status: 500, message: "Debe estar logeado para acceder al servicio" };
+        }
     } catch (e) {
         console.log(e);
         return { status: 500, message: "Error interno del servidor." }
@@ -176,16 +196,19 @@ const createTasasCambio = async (req) => {
 
 const createMoneda = async (req) => {
 
-    const { descripcion, tipo } = req.headers
+    const { descripcion, tipo, acceso } = req.headers
 
     try {
-        const moneda = { descripcion, tipo };
-        let monedaNew = await dbSequelize.tasaCambio.create(moneda);
-        if (monedaNew) {
-            return { status: 200, message: "Creado Correctamente" };
+        if (acceso) {
+            const moneda = { descripcion, tipo };
+            let monedaNew = await dbSequelize.tasaCambio.create(moneda);
+            if (monedaNew) {
+                return { status: 200, message: "Creado Correctamente" };
+            }
+            else { return { status: 404, message: "Error Creando datos " }; }
+        } else {
+            return { status: 500, message: "Debe estar logeado para acceder al servicio" };
         }
-        else { return { status: 404, message: "Error Creando datos " }; }
-
     } catch (e) {
         console.log(e);
         return { status: 500, message: "Error interno del servidor." }
@@ -214,16 +237,19 @@ const AllTasasCambio = async () => {
 
 const createEntidad = async (req) => {
 
-    const { descripcion } = req.headers
+    const { descripcion, acceso } = req.headers
 
     try {
-        const Entidad = { descripcion };
-        let EntidadNew = await dbSequelize.tipoEntidad.create(Entidad);
-        if (EntidadNew) {
-            return { status: 200, message: "Creado Correctamente" };
+        if (acceso) {
+            const Entidad = { descripcion };
+            let EntidadNew = await dbSequelize.tipoEntidad.create(Entidad);
+            if (EntidadNew) {
+                return { status: 200, message: "Creado Correctamente" };
+            }
+            else { return { status: 404, message: "Error Creando datos " }; }
+        } else {
+            return { status: 500, message: "Debe estar logeado para acceder al servicio" };
         }
-        else { return { status: 404, message: "Error Creando datos " }; }
-
     } catch (e) {
         console.log(e);
         return { status: 500, message: "Error interno del servidor." }
@@ -232,26 +258,34 @@ const createEntidad = async (req) => {
 
 const createtipoFormulario = async (req) => {
 
-    const { descripcion } = req.headers
+    const { descripcion, acceso } = req.headers
 
     try {
-        const Entidad = { descripcion };
-        let EntidadNew = await dbSequelize.tipoEntidad.create(Entidad);
-        if (EntidadNew) {
-            return { status: 200, message: "Creado Correctamente" };
+        if (acceso) {
+            const Entidad = { descripcion };
+            let EntidadNew = await dbSequelize.tipoEntidad.create(Entidad);
+            if (EntidadNew) {
+                return { status: 200, message: "Creado Correctamente" };
+            }
+            else { return { status: 404, message: "Error Creando datos " }; }
         }
-        else { return { status: 404, message: "Error Creando datos " }; }
-
+        else {
+            return { status: 500, message: "Debe estar logeado para acceder al servicio" };
+        }
     } catch (e) {
         console.log(e);
         return { status: 500, message: "Error interno del servidor." }
     }
 };
 
-const AllEntidad = async () => {
+const AllEntidad = async (req) => {
+ 
     try {
+
         const tipoEntidad = await dbSequelize.tipoEntidad.findAll({});
         return { status: 200, data: tipoEntidad };
+
+
     } catch (e) {
         console.log(e);
         //throw e;
@@ -259,10 +293,15 @@ const AllEntidad = async () => {
     }
 };
 
-const AlltipoFormulario = async () => {
+const AlltipoFormulario = async (req) => {    
+    const { acceso } = req.headers
     try {
-        const tipoFormulario = await dbSequelize.tipoFormulario.findAll({});
-        return { status: 200, data: tipoFormulario };
+        if (acceso) {
+            const tipoFormulario = await dbSequelize.tipoFormulario.findAll({});
+            return { status: 200, data: tipoFormulario };
+        } else {
+            return { status: 500, message: "Debe estar logeado para acceder al servicio" };
+        }
     } catch (e) {
         console.log(e);
         //throw e;
@@ -294,7 +333,7 @@ const SearchFormularioClient = async (req) => {
             return { status: 403, data: { message: "No hay Informacion" } };
         }
         const formularios = await dbSequelize.formulario.findAll(
-            { 
+            {
                 where: { id_persona: Persona.id_persona }
             }
         );
