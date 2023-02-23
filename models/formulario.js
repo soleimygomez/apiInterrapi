@@ -30,7 +30,7 @@ module.exports = function (sequelize, DataTypes) {
     },
     telefono_beneficiario: {
       type: DataTypes.STRING,
-      allowNull: false,
+      allowNull: true,
       autoIncrement: false,
       primaryKey: false,
       defaultValue: null
