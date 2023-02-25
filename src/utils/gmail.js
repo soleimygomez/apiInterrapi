@@ -66,7 +66,7 @@ const sendEmailGmail = async (output, userData, attachmentName, subject, text) =
 
     // let email = registerEmail(subject, text, '', attachmentName, attachmentType, '', userData).then(/*email => console.log(email)*/);
     console.log(userData.email)
-    userData.email="danielagbaron@gmail.com";
+     
     let config = {
       from: process.env.EMAIL_GMAIL,
       to:userData.email, // list of receivers
