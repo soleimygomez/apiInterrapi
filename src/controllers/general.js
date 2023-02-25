@@ -3,7 +3,7 @@ const dotenv = require("dotenv");
 dotenv.config();
 const { validationResult } = require('express-validator');
 const dbSequelize = require('../config/database_sequelize.js');
-
+const { sendEmail } = require("../utils/utils.js");
 const sequelize = dbSequelize.sequelize;
 const fs = require('fs');
 
@@ -15,7 +15,32 @@ const createFormulario = async (req, res, next) => {
     try {
         const result = await general_services.createFormulario(req);
         if (result.status === 200) {
-            res.status(result.status).json(result.message);
+            let subjectEmail = 'Interrappi (Los Mejores en Envios) - Envio de Notificacion Solicitud Nro. ' + result.data.id;
+            let text = 'Interrappi';
+            const persona = await dbSequelize.persona.findOne({ where: { id_persona: result.data.id_persona } });
+
+            let dataSend = {
+                "id": result.data.id,
+                "nombre": persona.nombre,
+                "cedula": persona.identificacion,
+                "telefono": persona.telefono,
+                "email": persona.correo,
+                "MontoEnviar": result.data.monto_enviar,
+                "nombreBeneficiario": result.data.nombre_beneficiario,
+                "cedulaBeneficiario": result.data.cedula_beneficiario,
+                "banco": result.data.banco_beneficiario,
+                "numeroCuenta": result.data.nro_cuenta,
+                "tipoCuenta": result.data.tipo_cuenta,
+                "estadoEnvio": "Espera",
+                "tipoFormulario": "Paypal",
+                "moneda": result.data.id_moneda == 2 ? "Bolivar" : "Dolar"
+            };
+            sendEmail("emailCreateNotification", dataSend, "", "", subjectEmail, text, false);
+            let message = "Error"
+            if (dataSend) {
+                message = "Envio exitoso"
+            }
+            res.status(result.status).json(message);
         } else {
             res.status(result.status).json(result.message);
         }
@@ -50,7 +75,25 @@ const FormularioUpdateStatus = async (req, res, next) => {
     try {
         const result = await general_services.FormularioUpdateStatus(req);
         if (result.status === 200) {
-            res.status(result.status).json(result.message);
+            console.log(result.data) 
+            let subjectEmail = 'Interrappi (Los Mejores en Envios) - Cambio de estado la Solicitud Nro. ' + result.data.id;
+            let text = 'Interrappi'; 
+            const persona = await dbSequelize.persona.findOne({ where: { id_persona: result.data.id_persona } });
+            let dataSend = {
+                "id": result.data.id,
+                "nombre": persona.nombre,
+                "cedula": persona.identificacion, 
+                "email": persona.correo, 
+                "nombreBeneficiario": result.data.nombre_beneficiario,
+                "estadoEnvio": result.data.id_estado==0?"Espera":"Atendido",
+                 
+            };
+            sendEmail("emailUpdateNotification", dataSend, "", "", subjectEmail, text, false);
+            let message = "Error"
+            if (dataSend) {
+                message = "Envio exitoso"
+            }
+            res.status(result.status).json(message); 
         } else {
             res.status(result.status).json(result.message);
         }

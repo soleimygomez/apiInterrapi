@@ -32,7 +32,7 @@ const createFormulario = async (req) => {
 
                 let FormularioNew = await dbSequelize.formulario.create(Formulario);
                 if (FormularioNew) {
-                    return { status: 200, message: "Enviado Correctamente" };
+                    return { status: 200, data: FormularioNew };
                 }
                 else { return { status: 404, message: "Error Enviando datos " }; }
             }
@@ -49,7 +49,7 @@ const createFormulario = async (req) => {
 
                     let FormularioNew = await dbSequelize.formulario.create(Formulario);
                     if (FormularioNew) {
-                        return { status: 200, message: "Enviado Correctamente" };
+                        return { status: 200, data: FormularioNew };
                     }
                     else { return { status: 404, message: "Error Enviando datos " }; }
 
@@ -157,8 +157,11 @@ const FormularioUpdateStatus = async (req) => {
             let updateStatus = await dbSequelize.formulario.update({ id_estado: status }, {
                 where: { id: id_formulario }
             });
+            let searchFormu = await dbSequelize.formulario.findOne({
+                where: { id: id_formulario }
+            });
             if (updateStatus) {
-                return { status: 200, message: "Se Actualizo Correctamente el estado" };
+                return { status: 200, data: searchFormu };
             }
             else { return { status: 403, message: "Error No se puedo actualizar el estado del formulario" }; }
         }
@@ -279,7 +282,7 @@ const createtipoFormulario = async (req) => {
 };
 
 const AllEntidad = async (req) => {
- 
+
     try {
 
         const tipoEntidad = await dbSequelize.tipoEntidad.findAll({});
@@ -293,7 +296,7 @@ const AllEntidad = async (req) => {
     }
 };
 
-const AlltipoFormulario = async (req) => {    
+const AlltipoFormulario = async (req) => {
     const { acceso } = req.headers
     try {
         if (acceso) {
